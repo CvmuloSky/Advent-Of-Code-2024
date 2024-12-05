@@ -5,21 +5,22 @@ public class Day4Part2 {
     public static void main(String[] args) {
         String fileName = "Day 4/inreal.txt";
         int count = 0;
+
         try {
-            List<List<String>> lists = new LinkedList<>();
+            List<List<String>> list = new ArrayList<>();
             try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
                 String line;
                 while ((line = br.readLine()) != null) {
-                    List<String> list = new ArrayList<>();
-                    String[] parts = line.split("(?<=.)");
-                    Collections.addAll(list, parts);
-                    lists.add(list);
+                    List<String> row = Arrays.asList(line.split(""));
+                    list.add(row);
                 }
             }
-            
-            for (int r = 1; r < lists.size() - 1; r++) {
-                for (int c = 1; c < lists.get(r).size() - 1; c++) {
-                    count += isXMAS(r, c, lists);
+
+            for (int r = 1; r < list.size() - 1; r++) {
+                for (int c = 1; c < list.get(r).size() - 1; c++) {
+                    if (list.get(r).get(c).equals("A")) {
+                        count += hasX_MAS(r, c, list);
+                    }
                 }
             }
             System.out.println("X-MAS COUNT: " + count);
@@ -28,35 +29,26 @@ public class Day4Part2 {
         }
     }
 
-    public static int isXMAS(int row, int col, List<List<String>> list) {
+    private static int hasX_MAS(int row, int col, List<List<String>> list) {
         int count = 0;
-
-        if (matchesMAS(row - 1, col - 1, list) &&
-            matchesA(row, col, list) &&
-            matchesMAS(row + 1, col + 1, list)) {
-            count++;
-        }
-        if (matchesMAS(row - 1, col + 1, list) &&
-            matchesA(row, col, list) &&
-            matchesMAS(row + 1, col - 1, list)) {
+        boolean TLBR = isMAS(list, row - 1, col - 1, row, col, row + 1, col + 1);
+        boolean TRBL = isMAS(list, row - 1, col + 1, row, col, row + 1, col - 1);
+        if(TLBR && TRBL) {
             count++;
         }
 
         return count;
     }
 
-    private static boolean matchesMAS(int row, int col, List<List<String>> list) {
-        if (row < 0 || col < 0 || row >= list.size() || col + 2 >= list.get(row).size()) {
-            return false;
+    private static boolean isMAS(List<List<String>> list, int r1, int c1, int r2, int c2, int r3, int c3) {
+        if (inBounds(list, r1, c1) && inBounds(list, r2, c2) && inBounds(list, r3, c3)) {
+            String pattern = list.get(r1).get(c1) + list.get(r2).get(c2) + list.get(r3).get(c3);
+            return pattern.equals("MAS") || pattern.equals("SAM");
         }
-        String pattern = list.get(row).get(col) + list.get(row).get(col + 1) + list.get(row).get(col + 2);
-        return pattern.equals("MAS") || pattern.equals("SAM");
+        return false;
     }
 
-    private static boolean matchesA(int row, int col, List<List<String>> list) {
-        if (row < 0 || col < 0 || row >= list.size() || col >= list.get(row).size()) {
-            return false;
-        }
-        return list.get(row).get(col).equals("A");
+    private static boolean inBounds(List<List<String>> list, int row, int col) {
+        return row >= 0 && row < list.size() && col >= 0 && col < list.get(row).size();
     }
 }
