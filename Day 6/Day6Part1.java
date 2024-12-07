@@ -2,7 +2,7 @@ import java.io.*;
 import java.util.*;
 
 public class Day6Part1 {
-    static LinkedList<LinkedList<String>> map = new LinkedList();
+    static LinkedList<LinkedList<String>> map = new LinkedList<>();
 
     public static void main(String[] args) {
         int sigma = 0;
@@ -14,7 +14,7 @@ public class Day6Part1 {
                 String line;
                 while ((line = br.readLine()) != null) {
                     String[] lineChars = line.split("");
-                    LinkedList<String> temp = new LinkedList<String>();
+                    LinkedList<String> temp = new LinkedList<>();
                     for (int i = 0; i < lineChars.length; i++) {
                         temp.add(lineChars[i]);
                         if (lineChars[i].equals("^")) {
@@ -33,74 +33,91 @@ public class Day6Part1 {
     }
 
     public static int totalMoves(int r, int c) {
+        Set<String> visitedPositions = new HashSet<>();
+        Set<String> positionDirectionVisited = new HashSet<>();
+        String direction = "^";
         int totalDistinctMoves = 0;
-        while (r < map.size() || c < map.get(0).size()) {
-            String current = map.get(r).get(c);
-            if (getOrientation(r, c).equals("up") && !map.get(r + 1).get(c).equals("#")) {
-                r++;
-                System.out.println(getOrientation(r, c));
-                if (!current.equals("X")) {
-                    totalDistinctMoves++;
-                }
-                map.get(r).set(c, "X");
-            } else if (getOrientation(r, c).equals("down") && !map.get(r - 1).get(c).equals("#")) {
-                r--;
-                System.out.println(getOrientation(r, c));
-                if (!current.equals("X")) {
-                    totalDistinctMoves++;
-                }
-                map.get(r).set(c, "X");
 
-            } else if (getOrientation(r, c).equals("right") && !map.get(r).get(c + 1).equals("#")) {
-                c++;
-                System.out.println(getOrientation(r, c));
-                if (!current.equals("X")) {
-                    totalDistinctMoves++;
-                }
-                map.get(r).set(c, "X");
+        while (true) {
+            String currentPosition = r + "," + c;
+            String currentPosDir = currentPosition + "," + direction;
 
-            } else if (getOrientation(r, c).equals("left") && !map.get(r).get(c - 1).equals("#")) {
-                c--;
-                System.out.println(getOrientation(r, c));
-                if (!current.equals("X")) {
-                    totalDistinctMoves++;
-                }
-                map.get(r).set(c, "X");
+            if (positionDirectionVisited.contains(currentPosDir)) {
+                break;
+            }
+            positionDirectionVisited.add(currentPosDir);
+
+            if (!visitedPositions.contains(currentPosition)) {
+                visitedPositions.add(currentPosition);
+                totalDistinctMoves++;
+            }
+
+            int[] nextPos = getNextPosition(r, c, direction);
+            int nextR = nextPos[0];
+            int nextC = nextPos[1];
+
+            if (canMove(nextR, nextC)) {
+                r = nextR;
+                c = nextC;
             } else {
-                turn(r, c);
+                direction = turnRight(direction);
+            }
+
+            if (isTrapped(r, c)) {
+                break;
             }
         }
         return totalDistinctMoves;
     }
 
-    public static String getOrientation(int r, int c) {
-        String orientation = "";
-        String current = map.get(r).get(c);
-        if (current.equals("^")) {
-            orientation = "up";
-        } else if (current.equals(">")) {
-            orientation = "right";
-        } else if (current.equals("<")) {
-            orientation = "left";
-        } else {
-            orientation = "down";
+    public static int[] getNextPosition(int r, int c, String direction) {
+        switch (direction) {
+            case "^":
+                return new int[] { r - 1, c };
+            case ">":
+                return new int[] { r, c + 1 };
+            case "v":
+                return new int[] { r + 1, c };
+            case "<":
+                return new int[] { r, c - 1 };
+            default:
+                throw new IllegalArgumentException("Invalid direction: " + direction);
         }
-        return orientation;
     }
 
-    public static String turn(int r, int c) {
-        String current = map.get(r).get(c);
-        String orientation = "";
-        if (current.equals("^")) {
-            orientation = ">";
-        } else if (current.equals(">")) {
-            orientation = "V";
-        } else if (current.equals("<")) {
-            orientation = "<";
-        } else {
-            orientation = "^";
+    public static String turnRight(String direction) {
+        switch (direction) {
+            case "^":
+                return ">";
+            case ">":
+                return "v";
+            case "v":
+                return "<";
+            case "<":
+                return "^";
+            default:
+                throw new IllegalArgumentException("Invalid direction: " + direction);
         }
-        return orientation;
     }
 
+    public static boolean canMove(int r, int c) {
+        return isWithinBounds(r, c) && !map.get(r).get(c).equals("#");
+    }
+
+    public static boolean isWithinBounds(int r, int c) {
+        return r >= 0 && r < map.size() && c >= 0 && c < map.get(0).size();
+    }
+
+    public static boolean isTrapped(int r, int c) {
+        String[] directions = { "^", ">", "v", "<" };
+        for (String direction : directions) {
+            int[] nextPos = getNextPosition(r, c, direction);
+            int nextR = nextPos[0];
+            int nextC = nextPos[1];
+            if (canMove(nextR, nextC)) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

@@ -3,7 +3,6 @@ import java.util.*;
 
 public class Day5Part2 {
     static HashMap<Integer, LinkedList<Integer>> map = new HashMap<>();
-
     public static void main(String[] args) {
         String fileName = "Day 5/in.txt";
         int midSum = 0;
